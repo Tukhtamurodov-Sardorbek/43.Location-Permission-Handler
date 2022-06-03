@@ -6,14 +6,14 @@
    (Internet permissions do not affect the `permission_handler` plugin but are required if your app needs access to the internet)
    (Starting from Android 10 you need to add the ACCESS_BACKGROUND_LOCATION permission)
 
-    ( <uses-permission android:name="android.permission.INTERNET" /> )
+    <uses-permission android:name="android.permission.INTERNET" />
 
    (Permissions options for the `location` group)
-   (<uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />)
-   (<uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />)
-   (<uses-permission android:name="android.permission.ACCESS_BACKGROUND_LOCATION" />)
+   <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
+   <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
+   <uses-permission android:name="android.permission.ACCESS_BACKGROUND_LOCATION" />
 
-3. IOS
+2. IOS
    For ios, in "ios/Runner/Info.plist", add the following settings in the end of dict tag.
     <!-- Permissions list starts here -->
         <!-- Permission while running on backgroud -->
