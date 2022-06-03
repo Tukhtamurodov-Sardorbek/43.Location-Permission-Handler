@@ -6,8 +6,7 @@
    (Internet permissions do not affect the `permission_handler` plugin but are required if your app needs access to the internet)
    (Starting from Android 10 you need to add the ACCESS_BACKGROUND_LOCATION permission)
 
-    (<uses-permission android:name="android.permission.INTERNET" />)
-    <uses-permission android:name="android.permission.INTERNET" />
+    ( <uses-permission android:name="android.permission.INTERNET" /> )
 
    (Permissions options for the `location` group)
    (<uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />)
