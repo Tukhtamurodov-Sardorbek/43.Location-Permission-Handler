@@ -35,7 +35,9 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
   void didChangeAppLifecycleState(AppLifecycleState state) {
     if (state == AppLifecycleState.resumed &&
         (_permissionProvider.permissionStatus == Permissions.granted)) {
-      _permissionProvider.checkLocationService();
+      _permissionProvider.checkLocationService().then((value) async{
+        await _permissionProvider.getLocation();
+      });
     }
     if (state == AppLifecycleState.resumed &&
         _detectPermission &&
@@ -61,7 +63,14 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
               child: Text(
                 'Your location coordinates: \n\n'
                     'Latitude: ${provider.position?.latitude}\n'
-                    'Longitude: ${provider.position?.longitude}'
+                    'Longitude: ${provider.position?.longitude}',
+                style: const TextStyle(
+                  color: Colors.purple,
+                  fontSize: 20,
+                  fontWeight: FontWeight.bold,
+                  fontStyle: FontStyle.italic,
+                ),
+                textAlign: TextAlign.center,
               ),
             ): Center(
               child: Column(
@@ -70,7 +79,7 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
                   const Text(
                     'Enable the location service!',
                     style: TextStyle(
-                      color: Colors.indigo,
+                      color: Colors.purple,
                       fontSize: 22,
                       fontWeight: FontWeight.bold,
                       fontStyle: FontStyle.italic,
@@ -80,7 +89,7 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
                   ElevatedButton(
                     style: ButtonStyle(
                       backgroundColor: MaterialStateProperty.all(
-                        Colors.indigo,
+                        Colors.purple,
                       ),
                     ),
                     onPressed: () {
@@ -156,6 +165,7 @@ class NoPermission extends StatelessWidget {
           const Text(
             'Location Permission',
             style: TextStyle(
+              color: Colors.purple,
               fontSize: 22,
               fontWeight: FontWeight.bold,
               fontStyle: FontStyle.italic,
@@ -165,8 +175,8 @@ class NoPermission extends StatelessWidget {
           const Text(
             'We need to request your permission to get '
                 'your current location in order to run the app.',
-            textAlign: TextAlign.center,
             style: TextStyle(
+              color: Colors.purple,
               fontSize: 18,
               fontWeight: FontWeight.bold,
               fontStyle: FontStyle.italic,
@@ -177,6 +187,7 @@ class NoPermission extends StatelessWidget {
               'You need to give this permission from the system settings...',
               textAlign: TextAlign.center,
               style: TextStyle(
+                color: Colors.purple,
                 fontSize: 18,
                 fontWeight: FontWeight.bold,
                 fontStyle: FontStyle.italic,
