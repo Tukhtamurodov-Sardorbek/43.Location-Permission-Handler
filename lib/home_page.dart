@@ -11,16 +11,14 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
-  late final PermissionProvider _model;
+  final PermissionProvider _permissionProvider = PermissionProvider();
   bool _detectPermission = false;
 
   @override
   void initState() {
     super.initState();
     WidgetsBinding.instance.addObserver(this);
-
-    _model = PermissionProvider();
-    _model.getGeoLocationPosition();
+    _permissionProvider.getGeoLocationPosition();
   }
 
   @override
@@ -36,12 +34,16 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
     if (state == AppLifecycleState.resumed &&
+        (_permissionProvider.permissionStatus == Permissions.granted)) {
+      _permissionProvider.checkLocationService();
+    }
+    if (state == AppLifecycleState.resumed &&
         _detectPermission &&
-        (_model.permissionStatus == Permissions.permanentlyDenied)) {
+        (_permissionProvider.permissionStatus == Permissions.permanentlyDenied)) {
       _detectPermission = false;
-      _model.requestPermission();
+      _permissionProvider.requestPermission();
     } else if (state == AppLifecycleState.paused &&
-        _model.permissionStatus == Permissions.permanentlyDenied) {
+        _permissionProvider.permissionStatus == Permissions.permanentlyDenied) {
       _detectPermission = true;
     }
   }
@@ -49,39 +51,78 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
   @override
   Widget build(BuildContext context) {
     return ChangeNotifierProvider.value(
-      value: _model,
+      value: _permissionProvider,
       child: Consumer<PermissionProvider>(
-        builder: (context, model, child) {
+        builder: (context, provider, child) {
           Widget _body;
-          switch (model.permissionStatus) {
+          switch (provider.permissionStatus) {
             case Permissions.granted:
-            _body = Center(
-              child: ElevatedButton(
-                onPressed: model.getGeoLocationPosition,
-                child: const Text('Get location'),
+            _body = provider.locationIsEnabled ? Center(
+              child: Text(
+                'Your location coordinates: \n\n'
+                    'Latitude: ${provider.position?.latitude}\n'
+                    'Longitude: ${provider.position?.longitude}'
+              ),
+            ): Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  const Text(
+                    'Enable the location service!',
+                    style: TextStyle(
+                      color: Colors.indigo,
+                      fontSize: 22,
+                      fontWeight: FontWeight.bold,
+                      fontStyle: FontStyle.italic,
+                    ),
+                  ),
+                  const SizedBox(height: 25),
+                  ElevatedButton(
+                    style: ButtonStyle(
+                      backgroundColor: MaterialStateProperty.all(
+                        Colors.indigo,
+                      ),
+                    ),
+                    onPressed: () {
+                      provider.requestToEnableLocationService();
+                    },
+                    child: const Text(
+                      'Settings',
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ),
+                ],
               ),
             );
               break;
             case Permissions.denied:
-              // _body = Container(color: Colors.yellowAccent);
-              _body = LocationPermission(
-                isPermanent: false,
-                onPressed: model.getGeoLocationPosition,
+              _body = NoPermission(
+                isPermanentlyDenied: false,
+                onPressed: provider.getGeoLocationPosition,
               );
               break;
             case Permissions.permanentlyDenied:
-              _body = LocationPermission(
-                isPermanent: true,
-                onPressed: model.getGeoLocationPosition,
+              _body = NoPermission(
+                isPermanentlyDenied: true,
+                onPressed: provider.getGeoLocationPosition,
               );
               break;
           }
 
-          return Scaffold(
-            appBar: AppBar(
-              title: const Text('Permission Handling'),
+          return WillPopScope(
+            onWillPop: provider.onWillPopFunction,
+            child: Scaffold(
+              appBar: AppBar(
+                backgroundColor: Colors.purple,
+                title: const Text('Permission Handling'),
+                centerTitle: true,
+              ),
+              body: SafeArea(child: _body),
             ),
-            body: _body,
           );
         },
       ),
@@ -89,67 +130,75 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
   }
 }
 
+
 /// This widget will serve to inform the user in
 /// case the permission has been denied. There is a
-/// variable [isPermanent] to indicate whether the
+/// variable [isPermanentlyDenied] to indicate whether the
 /// permission has been denied forever or not.
-class LocationPermission extends StatelessWidget {
-  final bool isPermanent;
+class NoPermission extends StatelessWidget {
+  final bool isPermanentlyDenied;
   final VoidCallback onPressed;
 
-  const LocationPermission({
+  const NoPermission({
     Key? key,
-    required this.isPermanent,
+    required this.isPermanentlyDenied,
     required this.onPressed,
   }) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
-    return Center(
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 16.0),
+      alignment: Alignment.center,
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Container(
-            padding: const EdgeInsets.only(
-              left: 16.0,
-              top: 24.0,
-              right: 16.0,
-            ),
-            child: Text(
-              'Location Permission',
-              style: Theme.of(context).textTheme.headline6,
+          const Text(
+            'Location Permission',
+            style: TextStyle(
+              fontSize: 22,
+              fontWeight: FontWeight.bold,
+              fontStyle: FontStyle.italic,
             ),
           ),
-          Container(
-            padding: const EdgeInsets.only(
-              left: 16.0,
-              top: 24.0,
-              right: 16.0,
+          const SizedBox(height: 25),
+          const Text(
+            'We need to request your permission to get '
+                'your current location in order to run the app.',
+            textAlign: TextAlign.center,
+            style: TextStyle(
+              fontSize: 18,
+              fontWeight: FontWeight.bold,
+              fontStyle: FontStyle.italic,
             ),
-            child: const Text(
-              'We need to request your permission to get '
-              'your current location in order to run the app.',
+          ),
+          if (isPermanentlyDenied)
+            const Text(
+              'You need to give this permission from the system settings...',
               textAlign: TextAlign.center,
-            ),
-          ),
-          if (isPermanent)
-            Container(
-              padding: const EdgeInsets.only(
-                left: 16.0,
-                top: 24.0,
-                right: 16.0,
-              ),
-              child: const Text(
-                'You need to give this permission from the system settings...',
-                textAlign: TextAlign.center,
+              style: TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.bold,
+                fontStyle: FontStyle.italic,
               ),
             ),
-          Container(
-            padding: const EdgeInsets.only(
-                left: 16.0, top: 24.0, right: 16.0, bottom: 24.0),
-            child: ElevatedButton(
-              child: Text(isPermanent ? 'Open settings' : 'Allow access'),
-              onPressed: () => isPermanent ? openAppSettings() : onPressed(),
+          const SizedBox(height: 25),
+          ElevatedButton(
+            style: ButtonStyle(
+              backgroundColor: MaterialStateProperty.all(
+                Colors.purple,
+              ),
+            ),
+            onPressed: () {
+              isPermanentlyDenied ? openAppSettings() : onPressed();
+            },
+            child: Text(
+              isPermanentlyDenied ? 'Open settings' : 'Allow access',
+              style: const TextStyle(
+                color: Colors.white,
+                fontSize: 18,
+                fontWeight: FontWeight.bold,
+              ),
             ),
           ),
         ],
