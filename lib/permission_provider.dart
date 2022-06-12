@@ -70,6 +70,13 @@ class PermissionProvider with ChangeNotifier {
     return;
   }
 
+  getLocation() async{
+    _position = await Geolocator.getCurrentPosition(
+      desiredAccuracy: LocationAccuracy.high,
+    );
+    notifyListeners();
+  }
+
   /// Location
   /// Check if the location permission is granted,
   /// if it's not granted then request it.
