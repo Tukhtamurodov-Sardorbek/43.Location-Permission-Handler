@@ -1,4 +1,20 @@
-# Location Permission Handling
+# ```Location Permission Handling```
+
+| Permission request #1 | Denied | Permission request #2 |
+|----------------|:----------------:|:----------------:|
+| ![Permission request #1](assets/readme/img.png) | ![Denied](assets/readme/img_1.png) | ![Permission request #2](assets/readme/img_2.png) |
+
+| Permanently denied | Grant | Location Service Disabled |
+|----------------|:----------------:|:----------------:|
+| ![Permanently denied](assets/readme/img_3.png) | ![Grant](assets/readme/img_4.png) | ![Location Service Disabled](assets/readme/img_5.png) |
+
+
+| Enable Location Service | Location Data |
+|----------------|:----------------:|
+| ![Enable Location Service](assets/readme/img_6.png) | ![Location Data](assets/readme/img_7.png) |
+
+
+
 
 ### Geolocator Package
 1. Android
